@@ -29,8 +29,8 @@ except ImportError:
     pass
 
 BASE = Path(__file__).parent
-MODEL = os.environ.get("GEMINI_MODEL")
-MODEL_RESPALDO = os.environ.get("GEMINI_MODEL_RESPALDO")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.6-flash")
+MODEL_RESPALDO = os.environ.get("GEMINI_MODEL_RESPALDO", "gemini-2.5-flash")
 ULTIMO_MODELO = None  # modelo que dio la última respuesta (lo usa eval/correr.py)
 
 # Lista ordenada de modelos a probar. Puedes definirla completa con GEMINI_MODELOS
@@ -140,7 +140,7 @@ def llamar_modelo(mensaje: str, history) -> Optional[Salida]:
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
         response_schema=Salida,
-        temperature=0.0,
+        temperature=0.2,
     )
     # Recorre los modelos en orden. Si la cuota diaria de uno se agotó (429 por día) o el
     # modelo no existe (404), se salta de inmediato; ante un 503 o un límite por minuto
@@ -207,4 +207,6 @@ demo = gr.ChatInterface(
 )
 
 if __name__ == "__main__":
-    demo.launch()
+    # server_name="0.0.0.0" y PORT son necesarios en plataformas como Render;
+    # en local, sin PORT, sigue usando el 7860 de siempre.
+    demo.launch(server_name="0.0.0.0", server_port=int(os.environ.get("PORT", 7860)))
