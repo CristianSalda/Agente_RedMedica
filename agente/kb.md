@@ -60,9 +60,11 @@ Dónde se presta cada servicio (resumen para consulta rápida):
 
 **Llegada tarde:** hay 10 minutos de tolerancia. Después, la cita puede reasignarse y hay que reprogramarla.
 
-**Menores y acompañantes:** los menores de 18 años van con un adulto responsable. Los mayores de 70 y las personas con discapacidad pueden ir con un acompañante.
+**Menores y acompañantes:** los menores de 18 años van con un adulto responsable. Los mayores de 70 y las personas con discapacidad pueden ir con un acompañante. 
+-solo los pacientes mayores de 70 años y las personas con discapacidad pueden ir con un acompañante. El anexo no dice nada sobre acompañantes de otros pacientes adultos, ni sobre si una persona mayor puede acompañar a otro paciente. En esos casos el agente no tiene información: no debe afirmarlo ni negarlo.
 
 **Elegir médico:** se puede pedir un médico al agendar, sujeto a disponibilidad. El agente NO conoce la agenda de los médicos.
+
 
 ---
 
@@ -112,6 +114,7 @@ IMPORTANTE: lo que hay aquí son CUOTAS MODERADORAS, no el precio total de una c
 - Con ayuno cuando la orden lo pida.
 - La orden médica está vigente por 30 días.
 - Villa del Río no tiene laboratorio.
+- El laboratorio se presta SOLO de lunes a viernes. No hay información de laboratorio los sábados, aunque Centro y Norte abran ese día.
 
 **Resultados:**
 - Hematología: 24 a 48 horas. Los demás exámenes: hasta 5 días hábiles.

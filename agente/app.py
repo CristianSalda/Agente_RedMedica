@@ -29,8 +29,8 @@ except ImportError:
     pass
 
 BASE = Path(__file__).parent
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
-MODEL_RESPALDO = os.environ.get("GEMINI_MODEL_RESPALDO", "gemini-3.1-flash-lite")
+MODEL = os.environ.get("GEMINI_MODEL")
+MODEL_RESPALDO = os.environ.get("GEMINI_MODEL_RESPALDO")
 ULTIMO_MODELO = None  # modelo que dio la última respuesta (lo usa eval/correr.py)
 
 # Lista ordenada de modelos a probar. Puedes definirla completa con GEMINI_MODELOS
@@ -95,6 +95,12 @@ def limpiar_pregunta(texto: str) -> str:
     """Quita correos y números largos antes de guardar. No debe llegar nada personal."""
     texto = re.sub(r"[\w.+-]+@[\w-]+\.[\w.-]+", "[correo]", texto)
     texto = re.sub(r"\d[\d\s.\-]{4,}\d", "[número]", texto)
+    # nombres declarados: "me llamo Ana Pérez", "mi nombre es Carlos", "soy María López"
+    texto = re.sub(
+        r"(?i:(\b(?:me llamo|mi nombre es|soy)\s+))(?:[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+\s?){1,3}",
+        r"\1[nombre] ",
+        texto,
+    )
     return texto.strip()[:300]
 
 
@@ -134,11 +140,14 @@ def llamar_modelo(mensaje: str, history) -> Optional[Salida]:
         system_instruction=SYSTEM_PROMPT,
         response_mime_type="application/json",
         response_schema=Salida,
-        temperature=0.2,
+        temperature=0.0,
     )
-    # Prueba el modelo principal y luego el de respaldo; 3 intentos por modelo,
-    # con espera creciente (sirve ante 503 por alta demanda o 429 por límite).
-    for modelo in (MODEL, MODEL_RESPALDO):
+    # Recorre los modelos en orden. Si la cuota diaria de uno se agotó (429 por día) o el
+    # modelo no existe (404), se salta de inmediato; ante un 503 o un límite por minuto
+    # se reintenta hasta 3 veces con espera creciente.
+    for modelo in MODELOS:
+        if AGOTADOS.get(modelo, 0) > time.time():
+            continue
         for intento in range(3):
             try:
                 r = client.models.generate_content(model=modelo, contents=contenidos, config=config)
@@ -146,9 +155,20 @@ def llamar_modelo(mensaje: str, history) -> Optional[Salida]:
                 ULTIMO_MODELO = modelo
                 return salida
             except Exception as e:  # noqa: BLE001
-                print(f"Error del modelo {modelo} (intento {intento + 1}):", repr(e))
+                error = str(e)
+                print(f"Error del modelo {modelo} (intento {intento + 1}):", error[:200])
+                if "429" in error and ("PerDay" in error or "per day" in error.lower()):
+                    AGOTADOS[modelo] = time.time() + 3600  # no insistir durante 1 hora
+                    break
+                if "404" in error or "NOT_FOUND" in error:
+                    AGOTADOS[modelo] = time.time() + 86400
+                    break
                 time.sleep(1.5 * (intento + 1))
     return None
+
+
+def hay_modelo_disponible() -> bool:
+    return any(AGOTADOS.get(m, 0) <= time.time() for m in MODELOS)
 
 
 def responder(mensaje: str, history):

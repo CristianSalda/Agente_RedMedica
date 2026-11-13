@@ -16,7 +16,7 @@ import app  # carga prompt, base de conocimiento y cliente; no lanza la interfaz
 
 PAUSA = 4  # segundos entre llamadas, para no pasar el límite del nivel gratuito
 ENTRADA = RAIZ / "eval" / "casos.csv"
-SALIDA = RAIZ / "eval" / "resultados.csv"
+SALIDA = RAIZ / "eval" / "resultados_3.csv"
 
 CAMPOS = [
     "id", "categoria", "elegible_impacto", "mensajes", "conversacion", "n_turnos",
